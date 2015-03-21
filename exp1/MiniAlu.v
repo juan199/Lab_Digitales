@@ -50,7 +50,7 @@ UPCOUNTER_POSEDGE IP
 );
 assign wIP = (rBranchTaken) ? wIPInitialValue : wIP_temp;
 
-FFD_POSEDGE_SYNCRONOUS_RESET # ( 8 ) FFD1  //importante para los warnings
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 4 ) FFD1  //importante para los warnings
 (
 	.Clock(Clock),
 	.Reset(Reset),

@@ -120,6 +120,14 @@ begin
 		rResult      <= wSourceData1 + wSourceData0;
 	end
 	//-------------------------------------
+	`SUB:
+	begin
+		rFFLedEN     <= 1'b0;
+		rBranchTaken <= 1'b0;
+		rWriteEnable <= 1'b1;
+		rResult      <= wSourceData1 - wSourceData0;
+	end
+	//-------------------------------------
 	`STO:
 	begin
 		rFFLedEN     <= 1'b0;

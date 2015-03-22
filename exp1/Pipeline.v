@@ -1,8 +1,6 @@
 `timescale 1ns / 1ps
 `include "Defintions.v"
 
-`define LOOP1 8'd8
-`define LOOP2 8'd5
 module ROM
 (
 	input  wire[15:0]  		iAddress,

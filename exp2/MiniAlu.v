@@ -12,7 +12,7 @@ module MiniAlu
  
 );
 
-wire [15:0]  wIP,wIP_temp;
+wire [15:0]  wIP,wIP_temp,imul_result;
 reg         rWriteEnable,rBranchTaken;
 wire [27:0] wInstruction;
 wire [3:0]  wOperation;
@@ -96,6 +96,8 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( 8 ) FF_LEDS
 	.Q( oLed    )
 );
 
+mult imultiplier( .opA(wSourceData0), .opB(wSourceData1), .result(imul_result));
+
 assign wImmediateValue = {wSourceAddr1,wSourceAddr0};
 
 
@@ -126,6 +128,14 @@ begin
 		rBranchTaken <= 1'b0;
 		rWriteEnable <= 1'b1;
 		rResult      <= wSourceData1 - wSourceData0;
+	end
+	//-------------------------------------
+	`IMUL:
+	begin
+		rFFLedEN     <= 1'b0;
+		rBranchTaken <= 1'b0;
+		rWriteEnable <= 1'b1;
+		rResult      <= {8'b0, imul_result};
 	end
 	//-------------------------------------
 	`STO:

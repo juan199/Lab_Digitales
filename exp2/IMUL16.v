@@ -1,9 +1,9 @@
 module IMUL16 # (parameter NUM_BITS = 16)
 (
 
-input wire [NUM_BITS-1:0] iA,
-input wire [NUM_BITS-1:0] iB,
-output wire [2*NUM_BITS:0] oResult,
+input wire [NUM_BITS-1:0] A,
+input wire [NUM_BITS-1:0] B,
+output reg [2*NUM_BITS:0] oResult
 
 );
 
@@ -11,14 +11,14 @@ wire [NUM_BITS-1:0] wCarry [NUM_BITS-1:0]; // matriz definida para conectar los 
 wire [NUM_BITS-1:0] Temp_results [NUM_BITS-1:0]; // matriz definida para conectar los resultados de los sumadores y los carry's de los ultimos digitos en la ultima columna.
 genvar CurrentRow, CurrentCol; // iteradores de columnas y filas
 
-assign oResult[0]=iA[0]&iB[0]; // se asigna el primer digito de la multiplicacion ya que es fijo
+assign oResult[0]=A[0]&B[0]; // se asigna el primer digito de la multiplicacion ya que es fijo
 assign Temp_results[0][NUM_BITS-1]=0; // se asigna un 0 al ultimo sumador de la primera fila siempre
 generate
-	for(CurrentRow=0 CurrentRow<NUM_BITS;CurrentRow=CurrentRow+1)
+	for(CurrentRow=0 CurrentRow<NUM_BITS;CurrentRow=CurrentRow+1);
 	begin
 		assign wCarry[CurrentRow][0];
 
-		for(CurrentCol=0 CurrentCol<NUM_BITS;CurrentCol=CurrentCol+1)
+		for(CurrentCol=0 CurrentCol<NUM_BITS;CurrentCol=CurrentCol+1);
 			begin
 				// Se guardan en Temp_results los primeros numeros en entrar a la primera fila de sumadores
 				if(CurrentRow==0 && CurrentCol<NUM_BITS-1)
@@ -86,5 +86,3 @@ generate
 	end	
 endgenerate
 endmodule
-
-

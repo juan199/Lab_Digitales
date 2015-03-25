@@ -16,9 +16,10 @@ wire [15:0]  wIP,wIP_temp,imul_result;
 reg         rWriteEnable,rBranchTaken;
 wire [27:0] wInstruction;
 wire [3:0]  wOperation;
-reg [15:0]   rResult;
+reg signed [15:0]   rResult;
 wire [7:0]  wSourceAddr0,wSourceAddr1,wDestination;
-wire [15:0] wSourceData0,wSourceData1,wIPInitialValue,wImmediateValue;
+wire signed [15:0] wSourceData0,wSourceData1,wImmediateValue;
+wire [15:0] wIPInitialValue;
 
 ROM InstructionRom 
 (
@@ -130,12 +131,20 @@ begin
 		rResult      <= wSourceData1 - wSourceData0;
 	end
 	//-------------------------------------
+	`SMUL:
+	begin
+		rFFLedEN     <= 1'b0;
+		rBranchTaken <= 1'b0;
+		rWriteEnable <= 1'b1;
+		rResult      <= wSourceData1 * wSourceData0;
+	end
+	//-------------------------------------
 	`IMUL:
 	begin
 		rFFLedEN     <= 1'b0;
 		rBranchTaken <= 1'b0;
 		rWriteEnable <= 1'b1;
-		rResult      <= {8'b0, imul_result};
+		rResult      <= imul_result;
 	end
 	//-------------------------------------
 	`STO:

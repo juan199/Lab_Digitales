@@ -7,12 +7,11 @@ module MiniAlu
 (
  input wire Clock,
  input wire Reset,
- output wire [7:0] oLed
-
- 
+ output wire [7:0] oLed 
 );
 
-wire [15:0]  wIP,wIP_temp,imul_result;
+wire [15:0]  wIP,wIP_temp;
+wire [7:0] imul_result;
 reg         rWriteEnable,rBranchTaken;
 wire [27:0] wInstruction;
 wire [3:0]  wOperation;
@@ -141,10 +140,11 @@ begin
 	//-------------------------------------
 	`IMUL:
 	begin
-		rFFLedEN     <= 1'b0;
-		rBranchTaken <= 1'b0;
-		rWriteEnable <= 1'b1;
-		rResult      <= imul_result;
+		rFFLedEN      <= 1'b0;
+		rBranchTaken  <= 1'b0;
+		rWriteEnable  <= 1'b1;
+		rResult[7:0]  <= imul_result;
+		rResult[15:8] <= 7'b0;
 	end
 	//-------------------------------------
 	`STO:

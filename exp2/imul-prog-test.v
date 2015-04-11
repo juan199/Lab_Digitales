@@ -11,8 +11,8 @@ begin
 	case (iAddress)
 	// op, dest, Src1, Src2;
 	0: oInstruction = { `NOP ,24'd4000    };
-	1: oInstruction = { `STO , `R1, 16'd7};
-	2: oInstruction = { `STO , `R2, 16'd5};
+	1: oInstruction = { `STO , `R1, 16'd8};
+	2: oInstruction = { `STO , `R2, 16'd4};
 	3: oInstruction = { `IMUL, `R3, `R1, `R2};
 	default:
 		oInstruction = { `LED ,  24'b10101010 };

@@ -12,6 +12,7 @@
 `define SUB   4'd7
 `define SMUL  4'd8
 `define IMUL  4'd9
+`define IMUL2 4'd11
 
 `define R0 8'd0
 `define R1 8'd1

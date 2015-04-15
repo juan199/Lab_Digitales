@@ -19,6 +19,14 @@ reg signed [15:0]   rResult;
 wire [7:0]  wSourceAddr0,wSourceAddr1,wDestination;
 wire signed [15:0] wSourceData0,wSourceData1,wImmediateValue;
 wire [15:0] wIPInitialValue;
+wire [15:0] oIMUL2;
+
+IMUL2 Multiply4(
+			.iSourceData0(wSourceData0),
+			.iSourceData1(wSourceData1),
+			.oResult(oIMUL2)
+			);
+
 
 ROM InstructionRom 
 (
@@ -145,6 +153,14 @@ begin
 		rWriteEnable  <= 1'b1;
 		rResult[7:0]  <= imul_result;
 		rResult[15:8] <= 7'b0;
+	end
+	//-------------------------------------	
+	`IMUL2:  // Juan
+	begin
+		rFFLedEN     <= 1'b0;
+		rBranchTaken <= 1'b0;
+		rWriteEnable <= 1'b1;
+	   rResult  <= oIMUL2;
 	end
 	//-------------------------------------
 	`STO:

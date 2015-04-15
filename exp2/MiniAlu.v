@@ -170,6 +170,7 @@ begin
 		rBranchTaken <= 1'b0;
 		rWriteEnable <= 1'b1;
 	   rResult  <= oIMUL2;
+
 	end
 	//-------------------------------------
 	`STO:

@@ -15,7 +15,10 @@ module MiniAlu
 );
 
 wire [15:0]  wIP,wIP_temp,IMUL_Result;
-wire [7:0] imul_result; 
+wire [7:0] imul_result;
+reg Subroutine_Flag;
+reg Return_Flag;
+wire [15:0] wReturn_Sub; 
 reg         rWriteEnable,rBranchTaken;
 wire [27:0] wInstruction;
 wire [3:0]  wOperation;
@@ -49,8 +52,10 @@ RAM_DUAL_READ_PORT DataRam
 	.oDataOut1(     wSourceData1 )
 );
 
+
 assign oLCD_reset = Reset;
-assign wIPInitialValue = (Reset) ? 8'b0 : wDestination ;
+assign wIPInitialValue = (Reset) ? 8'b0 : (Return_Flag? wReturn_Sub:wDestination);
+
 UPCOUNTER_POSEDGE IP
 (
 .Clock(   Clock                ), 
@@ -60,8 +65,8 @@ UPCOUNTER_POSEDGE IP
 .Q(       wIP_temp             )
 );
 
-assign wIP = (rBranchTaken) ? wIPInitialValue :(wIP_temp);
 
+assign wIP = (rBranchTaken) ? (Return_Flag? wReturn_Sub:wIPInitialValue): wIP_temp;
 
 
 FFD_POSEDGE_SYNCRONOUS_RESET # ( 4 ) FFD1 
@@ -100,7 +105,6 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( 8 ) FFD4
 	.Q(wDestination)
 );
 
-
 reg rFFLedEN;
 FFD_POSEDGE_SYNCRONOUS_RESET # ( 8 ) FF_LEDS
 (
@@ -108,9 +112,19 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( 8 ) FF_LEDS
 	.Reset(Reset),
 	.Enable( rFFLedEN ),
 	.D( wSourceData1 ),
-	.Q( oLed   )
+	.Q( oLed    )
 );
+//***************************** FFD Subroutine **********************************
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 16 ) FFDSub 
+(
+	.Clock(Subroutine_Flag),
+	.Reset(Reset),
+	.Enable(1'b1),
+	.D(wIP_temp),
+	.Q(wReturn_Sub)
 
+);
+//************************************************************************
 //***************************** IMUL16 **********************************
 IMUL16 #(16) MULT16
 (
@@ -137,6 +151,9 @@ begin
 		rWriteEnable <= 1'b0;
 		rResult      <= 1'b0;
 		oLCD_writeEN <= 1'b0;
+		Subroutine_Flag <=1'b0;
+		Return_Flag <=1'b0;
+
 	end
 	//-------------------------------------
 	`ADD:
@@ -144,9 +161,11 @@ begin
 		rFFLedEN     <= 1'b0;
 		rBranchTaken <= 1'b0;
 		rWriteEnable <= 1'b1;
-		rResult      <= wSourceData1 + wSourceData0;
 		oLCD_writeEN <=1'b0;
-	
+		rResult      <= wSourceData1 + wSourceData0;
+		Subroutine_Flag <=1'b0;
+		Return_Flag <=1'b0;
+
 	end
 	//-------------------------------------
 	`SUB:
@@ -154,9 +173,11 @@ begin
 		rFFLedEN     <= 1'b0;
 		rBranchTaken <= 1'b0;
 		rWriteEnable <= 1'b1;
-		rResult      <= wSourceData1 - wSourceData0;
 		oLCD_writeEN <= 1'b0;
-	
+		rResult      <= wSourceData1 - wSourceData0;
+		Subroutine_Flag <=1'b0;
+		Return_Flag <=1'b0;
+
 	end
 	//-------------------------------------
 	`BRANCH_IF_NSYNC:
@@ -190,16 +211,20 @@ begin
 		oLCD_writeEN	<= 1'b1;
 		rBranchTaken <= 1'b0;
 		rResult <=0;
-
+		Subroutine_Flag <=1'b0;
+		Return_Flag <=1'b0;
 	end
+
 	//-------------------------------------
 	`STO:
 	begin
 		rFFLedEN     <= 1'b0;
 		rWriteEnable <= 1'b1;
 		rBranchTaken <= 1'b0;
-		rResult      <= wImmediateValue;
 		oLCD_writeEN <= 1'b0;
+		rResult      <= wImmediateValue;
+		Subroutine_Flag <=1'b0;
+		Return_Flag <=1'b0;
 
 	end
 	//-------------------------------------
@@ -209,6 +234,9 @@ begin
 		rWriteEnable <= 1'b0;
 		rResult      <= 1'b0;
 		oLCD_writeEN <= 1'b0;
+		Subroutine_Flag <=1'b0;
+		Return_Flag <=1'b0;
+		
 		if (wSourceData1 <= wSourceData0 )
 			rBranchTaken <= 1'b1;
 		else
@@ -221,8 +249,11 @@ begin
 		rFFLedEN     <= 1'b0;
 		rWriteEnable <= 1'b0;
 		rResult      <= 0;
-		rBranchTaken <= 1'b1;
 		oLCD_writeEN <= 1'b0;
+		rBranchTaken <= 1'b1;
+		Subroutine_Flag <=1'b0;
+		Return_Flag <=1'b0;
+
 	end
 	//-------------------------------------	
 	`LED:
@@ -230,10 +261,39 @@ begin
 		rFFLedEN     <= 1'b1;
 		rWriteEnable <= 1'b0;
 		rResult      <= 0;
-		rBranchTaken <= 1'b0;
 		oLCD_writeEN <= 1'b0;
+		rBranchTaken <= 1'b0;
+		Subroutine_Flag <= 1'b0;
+		Return_Flag <= 1'b0;
 	end
-	
+
+	//-------------------------------------		
+
+	`CALL:
+	begin
+		rFFLedEN     <= 1'b0;
+		rBranchTaken <= 1'b1;
+		rWriteEnable <= 1'b0;
+		Subroutine_Flag <=1'b1;
+		Return_Flag <=1'b0;
+		rResult      <= 0;
+		oLCD_writeEN <= 1'b0;
+			
+	end
+	//-------------------------------------
+	`RET:
+	begin
+    	
+		rFFLedEN     <= 1'b0;
+		rBranchTaken <= 1'b1;
+		rWriteEnable <= 1'b0;
+		Subroutine_Flag <=1'b0;
+		Return_Flag <=1'b1;
+		rResult      <= 0;
+		oLCD_writeEN <= 1'b0;
+		
+	end
+
 	//-------------------------------------		
 	`SMUL:
 	begin
@@ -242,6 +302,7 @@ begin
 		rWriteEnable <= 1'b1;
 		rResult      <= wSourceData1 * wSourceData0;
 		oLCD_writeEN <= 1'b0;
+		
 	end
 	//-------------------------------------
 	default:
@@ -249,8 +310,10 @@ begin
 		rFFLedEN     <= 1'b1;
 		rWriteEnable <= 1'b0;
 		rResult      <= 0;
-		rBranchTaken <= 1'b0;
 		oLCD_writeEN <= 1'b0;
+		rBranchTaken <= 1'b0;
+		Subroutine_Flag <=1'b0;
+		Return_Flag <=1'b0;
 	end	
 	//-------------------------------------	
 	endcase	

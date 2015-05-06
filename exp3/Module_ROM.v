@@ -8,30 +8,43 @@ module ROM
 	input  wire[15:0]  		iAddress,
 	output reg [27:0] 		oInstruction
 );	
+
+`define LABEL_LOOP 8'd2
+`define LABEL_LOOP1 8'd10
+`define LABEL_CONTINUE 8'd5
+`define LABEL_CONTINUE1 8'd8
+`define LABEL_CONTINUE2 8'd13
+
 always @ ( iAddress )
 begin
 	case (iAddress)
 
-	0: oInstruction = { `NOP ,24'd4000    };
-	1: oInstruction = { `STO , `R7,16'b0001 };
-	2: oInstruction = { `STO ,`R3,16'h1     }; 
-	3: oInstruction = { `STO, `R4,16'd1 };
-	4: oInstruction = { `STO, `R5,16'd0     };  //j
-//LOOP2:
-	5: oInstruction = { `LED ,8'b0,`R7,8'b0 };
-	6: oInstruction = { `STO ,`R1,16'h0     }; 	
-	7: oInstruction = { `STO ,`R2,16'd1 };
-//LOOP1:	
-	8: oInstruction = { `ADD ,`R1,`R1,`R3    }; 
-	9: oInstruction = { `BLE ,`LOOP1,`R1,`R2 }; 
 	
-	10: oInstruction = { `ADD ,`R5,`R5,`R3    };
-	11: oInstruction = { `BLE ,`LOOP2,`R5,`R4 };	
-	12: oInstruction = { `NOP ,24'd4000       }; 
-	13: oInstruction = { `ADD ,`R7,`R7,`R3    };
-	14: oInstruction = { `JMP ,  8'd2,16'b0   };
+	0: oInstruction = { `NOP ,24'd4000    };
+	1: oInstruction = { `STO , `R1,16'd64 };
+//LABEL_LOOP:	
+	2: oInstruction = { `LCD , 8'd0, `R1 , 8'd0  }; 
+	3: oInstruction = { `BRANCH_IF_NSYNC , `LABEL_CONTINUE  ,16'd0  }; 
+	4:	oInstruction = { `JMP , `LABEL_LOOP  ,16'd0  }; 
+		
+//LABEL_CONTINUE		
+	5: oInstruction = { `SLH , 8'd0, `R1 , 8'd0  };
+	6: oInstruction = { `BRANCH_IF_NSYNC , `LABEL_CONTINUE1  ,16'd0  };
+	7:	oInstruction = { `JMP , `LABEL_CONTINUE  ,16'd0  };
+	
+//`LABEL_CONTINUE1
+	8: oInstruction = { `STO , `R1,16'd50 }; 
+	9: oInstruction = { `STO , `R1,16'd80 };
+	
+//LABEL_LOOP1:	
+	10: oInstruction = { `LCD , 8'd0, `R1 , 8'd0  }; 
+	11: oInstruction = { `BRANCH_IF_NSYNC , `LABEL_CONTINUE2  ,16'd0  }; 
+	12: oInstruction = { `JMP , `LABEL_LOOP1  ,16'd0  }; 
+
+//CONTINUE2	
+	13: oInstruction = { `STO , `R1,16'd100 }; 
 	default:
-		oInstruction = { `LED ,  24'b10101010 };		//NOP
+		oInstruction = { `LED ,  24'b10101010 };	//NOP
 	endcase	
 end
 	

@@ -7,11 +7,15 @@ module MiniAlu
 (
  input wire Clock,
  input wire Reset,
- output wire [7:0] oLed 
+ input wire iLCD_response,//Respuesta del LCD
+ output reg [7:0] oLed,
+ output reg [3:0] oLCD_data,//Datos a enviar al LCD
+ output wire oLCD_reset, //Reset del LCD_Controller
+ output reg oLCD_writeEN // Señal de envío de Datos al LCD_Controller
 );
 
 wire [15:0]  wIP,wIP_temp,IMUL_Result;
-wire [7:0] imul_result;
+wire [7:0] imul_result; 
 reg         rWriteEnable,rBranchTaken;
 wire [27:0] wInstruction;
 wire [3:0]  wOperation;
@@ -26,7 +30,6 @@ IMUL2 Multiply4(
 			.iSourceData1(wSourceData1),
 			.oResult(oIMUL2)
 			);
-
 
 ROM InstructionRom 
 (
@@ -46,7 +49,8 @@ RAM_DUAL_READ_PORT DataRam
 	.oDataOut1(     wSourceData1 )
 );
 
-assign wIPInitialValue = (Reset) ? 8'b0 : wDestination;
+assign oLCD_reset = Reset;
+assign wIPInitialValue = (Reset) ? 8'b0 : wDestination ;
 UPCOUNTER_POSEDGE IP
 (
 .Clock(   Clock                ), 
@@ -55,7 +59,10 @@ UPCOUNTER_POSEDGE IP
 .Enable(  1'b1                 ),
 .Q(       wIP_temp             )
 );
-assign wIP = (rBranchTaken) ? wIPInitialValue : wIP_temp;
+
+assign wIP = (rBranchTaken) ? wIPInitialValue :(wIP_temp);
+
+
 
 FFD_POSEDGE_SYNCRONOUS_RESET # ( 4 ) FFD1 
 (
@@ -101,7 +108,7 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( 8 ) FF_LEDS
 	.Reset(Reset),
 	.Enable( rFFLedEN ),
 	.D( wSourceData1 ),
-	.Q( oLed    )
+	.Q( oLed   )
 );
 
 //***************************** IMUL16 **********************************
@@ -128,7 +135,8 @@ begin
 		rFFLedEN     <= 1'b0;
 		rBranchTaken <= 1'b0;
 		rWriteEnable <= 1'b0;
-		rResult      <= 0;
+		rResult      <= 1'b0;
+		oLCD_writeEN <= 1'b0;
 	end
 	//-------------------------------------
 	`ADD:
@@ -137,6 +145,8 @@ begin
 		rBranchTaken <= 1'b0;
 		rWriteEnable <= 1'b1;
 		rResult      <= wSourceData1 + wSourceData0;
+		oLCD_writeEN <=1'b0;
+	
 	end
 	//-------------------------------------
 	`SUB:
@@ -145,31 +155,41 @@ begin
 		rBranchTaken <= 1'b0;
 		rWriteEnable <= 1'b1;
 		rResult      <= wSourceData1 - wSourceData0;
+		oLCD_writeEN <= 1'b0;
+	
 	end
 	//-------------------------------------
-	`SMUL:
+	`BRANCH_IF_NSYNC:
 	begin
 		rFFLedEN     <= 1'b0;
-		rBranchTaken <= 1'b0;
-		rWriteEnable <= 1'b1;
-		rResult      <= wSourceData1 * wSourceData0;
+		rWriteEnable <= 1'b0;
+		rResult      <= 0;
+		if (iLCD_response)
+			rBranchTaken <= 1'b1;
+		else
+			rBranchTaken <= 1'b0;
+		oLCD_writeEN <= 1'b1;
+		
 	end
 	//-------------------------------------
-	`IMUL:
-	begin
-		rFFLedEN      <= 1'b0;
-		rBranchTaken  <= 1'b0;
-		rWriteEnable  <= 1'b1;
-		rResult[7:0]  <= imul_result;
-		rResult[15:8] <= 7'b0;
-	end
-	//-------------------------------------	
-	`IMUL2:  // Juan
-	begin
+	`LCD:  // Juan
+		begin		
+		rWriteEnable <= 1'b0;
 		rFFLedEN     <= 1'b0;
 		rBranchTaken <= 1'b0;
-		rWriteEnable <= 1'b1;
-	   rResult  <= oIMUL2;
+		oLCD_data    <= wSourceData1[7:4];//Manda Parte Alta 
+		oLCD_writeEN	<= 1'b1;
+		rResult <= 1'b0;
+	end
+		//-------------------------------------
+	`SLH:  // Juan
+		begin
+		rWriteEnable   <= 1'b0;
+		rFFLedEN       <= 1'b0;
+		oLCD_data      <= wSourceData1[3:0];//Manda Parte Alta 
+		oLCD_writeEN	<= 1'b1;
+		rBranchTaken <= 1'b0;
+		rResult <=0;
 
 	end
 	//-------------------------------------
@@ -179,18 +199,21 @@ begin
 		rWriteEnable <= 1'b1;
 		rBranchTaken <= 1'b0;
 		rResult      <= wImmediateValue;
+		oLCD_writeEN <= 1'b0;
+
 	end
 	//-------------------------------------
 	`BLE:
 	begin
 		rFFLedEN     <= 1'b0;
 		rWriteEnable <= 1'b0;
-		rResult      <= 0;
+		rResult      <= 1'b0;
+		oLCD_writeEN <= 1'b0;
 		if (wSourceData1 <= wSourceData0 )
 			rBranchTaken <= 1'b1;
 		else
 			rBranchTaken <= 1'b0;
-		
+				
 	end
 	//-------------------------------------	
 	`JMP:
@@ -199,6 +222,7 @@ begin
 		rWriteEnable <= 1'b0;
 		rResult      <= 0;
 		rBranchTaken <= 1'b1;
+		oLCD_writeEN <= 1'b0;
 	end
 	//-------------------------------------	
 	`LED:
@@ -207,18 +231,18 @@ begin
 		rWriteEnable <= 1'b0;
 		rResult      <= 0;
 		rBranchTaken <= 1'b0;
+		oLCD_writeEN <= 1'b0;
 	end
-
-	//-------------------------------------	
-	`IMUL16:
+	
+	//-------------------------------------		
+	`SMUL:
 	begin
 		rFFLedEN     <= 1'b0;
-		rWriteEnable <= 1'b1;
-		rResult      <= IMUL_Result;
 		rBranchTaken <= 1'b0;
+		rWriteEnable <= 1'b1;
+		rResult      <= wSourceData1 * wSourceData0;
+		oLCD_writeEN <= 1'b0;
 	end
-	//-------------------------------------		
-	
 	//-------------------------------------
 	default:
 	begin
@@ -226,6 +250,7 @@ begin
 		rWriteEnable <= 1'b0;
 		rResult      <= 0;
 		rBranchTaken <= 1'b0;
+		oLCD_writeEN <= 1'b0;
 	end	
 	//-------------------------------------	
 	endcase	

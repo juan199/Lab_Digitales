@@ -14,7 +14,8 @@
 `define IMUL  4'd9
 `define IMUL16 4'd10
 `define IMUL2 4'd11
-
+`define CALL 4'd12
+`define RET 4'd13
 
 
 

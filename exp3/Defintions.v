@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 `ifndef DEFINTIONS_V
 `define DEFINTIONS_V
-	
+
 `default_nettype none	
 `define NOP   4'd0
 `define LED   4'd2
@@ -10,13 +10,12 @@
 `define ADD   4'd5
 `define JMP   4'd6
 `define SUB   4'd7
-`define SMUL  4'd8
-`define IMUL  4'd9
-`define IMUL16 4'd10
-`define IMUL2 4'd11
+`define BRANCH_IF_NSYNC 4'd8
+`define SMUL  4'd9
 `define CALL 4'd12
 `define RET 4'd13
-
+`define LCD 4'd14
+`define SLH 4'd15
 
 
 

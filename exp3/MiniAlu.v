@@ -7,7 +7,11 @@ module MiniAlu
 (
  input wire Clock,
  input wire Reset,
- output wire [7:0] oLed 
+ input wire iLCD_response,//Respuesta del LCD
+ output reg [7:0] oLed,
+ output reg [3:0] oLCD_data,//Datos a enviar al LCD
+ output wire oLCD_reset, //Reset del LCD_Controller
+ output reg oLCD_writeEN // Señal de envío de Datos al LCD_Controller
 );
 
 wire [15:0]  wIP,wIP_temp,IMUL_Result;
@@ -30,7 +34,6 @@ IMUL2 Multiply4(
 			.oResult(oIMUL2)
 			);
 
-
 ROM InstructionRom 
 (
 	.iAddress(     wIP          ),
@@ -49,7 +52,10 @@ RAM_DUAL_READ_PORT DataRam
 	.oDataOut1(     wSourceData1 )
 );
 
+
+assign oLCD_reset = Reset;
 assign wIPInitialValue = (Reset) ? 8'b0 : (Return_Flag? wReturn_Sub:wDestination);
+
 UPCOUNTER_POSEDGE IP
 (
 .Clock(   Clock                ), 
@@ -58,7 +64,10 @@ UPCOUNTER_POSEDGE IP
 .Enable(  1'b1                 ),
 .Q(       wIP_temp             )
 );
+
+
 assign wIP = (rBranchTaken) ? (Return_Flag? wReturn_Sub:wIPInitialValue): wIP_temp;
+
 
 FFD_POSEDGE_SYNCRONOUS_RESET # ( 4 ) FFD1 
 (
@@ -113,6 +122,7 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( 16 ) FFDSub
 	.Enable(1'b1),
 	.D(wIP_temp),
 	.Q(wReturn_Sub)
+
 );
 //************************************************************************
 //***************************** IMUL16 **********************************
@@ -139,9 +149,11 @@ begin
 		rFFLedEN     <= 1'b0;
 		rBranchTaken <= 1'b0;
 		rWriteEnable <= 1'b0;
-		rResult      <= 0;
+		rResult      <= 1'b0;
+		oLCD_writeEN <= 1'b0;
 		Subroutine_Flag <=1'b0;
 		Return_Flag <=1'b0;
+
 	end
 	//-------------------------------------
 	`ADD:
@@ -149,9 +161,11 @@ begin
 		rFFLedEN     <= 1'b0;
 		rBranchTaken <= 1'b0;
 		rWriteEnable <= 1'b1;
+		oLCD_writeEN <=1'b0;
 		rResult      <= wSourceData1 + wSourceData0;
 		Subroutine_Flag <=1'b0;
 		Return_Flag <=1'b0;
+
 	end
 	//-------------------------------------
 	`SUB:
@@ -159,58 +173,67 @@ begin
 		rFFLedEN     <= 1'b0;
 		rBranchTaken <= 1'b0;
 		rWriteEnable <= 1'b1;
+		oLCD_writeEN <= 1'b0;
 		rResult      <= wSourceData1 - wSourceData0;
-		Subroutine_Flag <=1'b0;
-		Return_Flag <=1'b0;
-	end
-	//-------------------------------------
-	`SMUL:
-	begin
-		rFFLedEN     <= 1'b0;
-		rBranchTaken <= 1'b0;
-		rWriteEnable <= 1'b1;
-		rResult      <= wSourceData1 * wSourceData0;
-		Subroutine_Flag <=1'b0;
-		Return_Flag <=1'b0;
-	end
-	//-------------------------------------
-	`IMUL:
-	begin
-		rFFLedEN      <= 1'b0;
-		rBranchTaken  <= 1'b0;
-		rWriteEnable  <= 1'b1;
-		rResult[7:0]  <= imul_result;
-		rResult[15:8] <= 7'b0;
-		Subroutine_Flag <=1'b0;
-		Return_Flag <=1'b0;
-	end
-	//-------------------------------------	
-	`IMUL2:  // Juan
-	begin
-		rFFLedEN     <= 1'b0;
-		rBranchTaken <= 1'b0;
-		rWriteEnable <= 1'b1;
-	   rResult  <= oIMUL2;
 		Subroutine_Flag <=1'b0;
 		Return_Flag <=1'b0;
 
 	end
+	//-------------------------------------
+	`BRANCH_IF_NSYNC:
+	begin
+		rFFLedEN     <= 1'b0;
+		rWriteEnable <= 1'b0;
+		rResult      <= 0;
+		if (iLCD_response)
+			rBranchTaken <= 1'b1;
+		else
+			rBranchTaken <= 1'b0;
+		oLCD_writeEN <= 1'b1;
+		
+	end
+	//-------------------------------------
+	`LCD:  // Juan
+		begin		
+		rWriteEnable <= 1'b0;
+		rFFLedEN     <= 1'b0;
+		rBranchTaken <= 1'b0;
+		oLCD_data    <= wSourceData1[7:4];//Manda Parte Alta 
+		oLCD_writeEN	<= 1'b1;
+		rResult <= 1'b0;
+	end
+		//-------------------------------------
+	`SLH:  // Juan
+		begin
+		rWriteEnable   <= 1'b0;
+		rFFLedEN       <= 1'b0;
+		oLCD_data      <= wSourceData1[3:0];//Manda Parte Alta 
+		oLCD_writeEN	<= 1'b1;
+		rBranchTaken <= 1'b0;
+		rResult <=0;
+		Subroutine_Flag <=1'b0;
+		Return_Flag <=1'b0;
+	end
+
 	//-------------------------------------
 	`STO:
 	begin
 		rFFLedEN     <= 1'b0;
 		rWriteEnable <= 1'b1;
 		rBranchTaken <= 1'b0;
+		oLCD_writeEN <= 1'b0;
 		rResult      <= wImmediateValue;
 		Subroutine_Flag <=1'b0;
 		Return_Flag <=1'b0;
+
 	end
 	//-------------------------------------
 	`BLE:
 	begin
 		rFFLedEN     <= 1'b0;
 		rWriteEnable <= 1'b0;
-		rResult      <= 0;
+		rResult      <= 1'b0;
+		oLCD_writeEN <= 1'b0;
 		Subroutine_Flag <=1'b0;
 		Return_Flag <=1'b0;
 		
@@ -218,7 +241,7 @@ begin
 			rBranchTaken <= 1'b1;
 		else
 			rBranchTaken <= 1'b0;
-		
+				
 	end
 	//-------------------------------------	
 	`JMP:
@@ -226,9 +249,11 @@ begin
 		rFFLedEN     <= 1'b0;
 		rWriteEnable <= 1'b0;
 		rResult      <= 0;
+		oLCD_writeEN <= 1'b0;
 		rBranchTaken <= 1'b1;
 		Subroutine_Flag <=1'b0;
 		Return_Flag <=1'b0;
+
 	end
 	//-------------------------------------	
 	`LED:
@@ -236,21 +261,12 @@ begin
 		rFFLedEN     <= 1'b1;
 		rWriteEnable <= 1'b0;
 		rResult      <= 0;
+		oLCD_writeEN <= 1'b0;
 		rBranchTaken <= 1'b0;
-		Subroutine_Flag <=1'b0;
-		Return_Flag <=1'b0;
+		Subroutine_Flag <= 1'b0;
+		Return_Flag <= 1'b0;
 	end
 
-	//-------------------------------------	
-	`IMUL16:
-	begin
-		rFFLedEN     <= 1'b0;
-		rWriteEnable <= 1'b1;
-		rResult      <= IMUL_Result;
-		rBranchTaken <= 1'b0;
-		Subroutine_Flag <=1'b0;
-		Return_Flag <=1'b0;		
-	end
 	//-------------------------------------		
 
 	`CALL:
@@ -261,6 +277,7 @@ begin
 		Subroutine_Flag <=1'b1;
 		Return_Flag <=1'b0;
 		rResult      <= 0;
+		oLCD_writeEN <= 1'b0;
 			
 	end
 	//-------------------------------------
@@ -273,16 +290,27 @@ begin
 		Subroutine_Flag <=1'b0;
 		Return_Flag <=1'b1;
 		rResult      <= 0;
+		oLCD_writeEN <= 1'b0;
 		
 	end
 
-	
+	//-------------------------------------		
+	`SMUL:
+	begin
+		rFFLedEN     <= 1'b0;
+		rBranchTaken <= 1'b0;
+		rWriteEnable <= 1'b1;
+		rResult      <= wSourceData1 * wSourceData0;
+		oLCD_writeEN <= 1'b0;
+		
+	end
 	//-------------------------------------
 	default:
 	begin
 		rFFLedEN     <= 1'b1;
 		rWriteEnable <= 1'b0;
 		rResult      <= 0;
+		oLCD_writeEN <= 1'b0;
 		rBranchTaken <= 1'b0;
 		Subroutine_Flag <=1'b0;
 		Return_Flag <=1'b0;

@@ -207,7 +207,7 @@ begin
 		begin
 		rWriteEnable   <= 1'b0;
 		rFFLedEN       <= 1'b0;
-		oLCD_data      <= wSourceData1[3:0];//Manda Parte Alta 
+		oLCD_data      <= wSourceData1[3:0];//Manda Parte Baja 
 		oLCD_writeEN	<= 1'b1;
 		rBranchTaken <= 1'b0;
 		rResult <=0;

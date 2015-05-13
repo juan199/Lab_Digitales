@@ -27,15 +27,23 @@ module TestBench;
 	// Inputs
 	reg Clock;
 	reg Reset;
-	reg response;
+	//reg response;
 
-	// Outputs
+	// MiniALU Outputs
+	wire response;
 	wire [7:0] oLed;
 	wire [3:0]data;
 	wire LCDreset;
 	wire writeEN;
+	// LCD_Controller OutPuts
+	wire [3:0]oLCD_Data;
+	wire oLCD_Enabled;
+	wire oLCD_RegisterSelect;
+	wire oLCD_ReadWrite;
+	wire oLCD_StrataFlashControl;
+	
 
-	// Instantiate the Unit Under Test (UUT)
+	// Instantiate the Units Under Test (UUT)
 	MiniAlu uut (
 		.Clock(Clock), 
 		.Reset(Reset), 
@@ -44,6 +52,19 @@ module TestBench;
 		.oLCD_data(data),
 		.oLCD_reset(LCDreset), 
 		.oLCD_writeEN(writeEN)
+	);
+	
+	LCD_controler uut1(
+		.clk(Clock),
+		.iLCD_data(data),
+		.iLCD_reset(LCDreset),
+		.iLCD_writeEN(writeEN),
+		.oLCD_response(response),
+		.oLCD_Data(oLCD_Data),
+		.oLCD_Enabled(oLCD_Enabled),
+		.oLCD_RegisterSelect(oLCD_RegisterSelect), 
+		.oLCD_ReadWrite(oLCD_ReadWrite),
+		.oLCD_StrataFlashControl(oLCD_StrataFlashControl)
 	);
 	
 	always
@@ -56,15 +77,14 @@ module TestBench;
 		// Initialize Inputs
 		Clock = 0;
 		Reset = 0;
-		response=0;
 
 		// Wait 100 ns for global reset to finish
 		Reset = 1;
-		#50
+		#100
 		Reset = 0;
         
 		// Add stimulus here
-		#50 response=1; #26 response=0; #130 response=1;
+		
 
 	end
       

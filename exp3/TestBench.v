@@ -69,7 +69,7 @@ module TestBench;
 	
 	always
 	begin
-		#5  Clock =  ! Clock;
+		#1  Clock =  ! Clock;
 
 	end
 
@@ -80,7 +80,7 @@ module TestBench;
 
 		// Wait 100 ns for global reset to finish
 		Reset = 1;
-		#100
+		#2
 		Reset = 0;
         
 		// Add stimulus here

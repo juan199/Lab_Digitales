@@ -51,21 +51,22 @@ module TestBench;
 		.iLCD_response(response),
 		.oLCD_data(data),
 		.oLCD_reset(LCDreset), 
-		.oLCD_writeEN(writeEN)
-	);
-	
-	LCD_controler uut1(
-		.clk(Clock),
-		.iLCD_data(data),
-		.iLCD_reset(LCDreset),
-		.iLCD_writeEN(writeEN),
-		.oLCD_response(response),
-		.oLCD_Data(oLCD_Data),
-		.oLCD_Enabled(oLCD_Enabled),
-		.oLCD_RegisterSelect(oLCD_RegisterSelect), 
-		.oLCD_ReadWrite(oLCD_ReadWrite),
+		.oLCD_writeEN(writeEN),
 		.oLCD_StrataFlashControl(oLCD_StrataFlashControl)
 	);
+	
+	//LCD_controler uut1(
+	//	.clk(Clock),
+	//	.iLCD_data(data),
+	//	.iLCD_reset(LCDreset),
+	//	.iLCD_writeEN(writeEN),
+	//	.oLCD_response(response),
+	//	.oLCD_Data(oLCD_Data),
+	//	.oLCD_Enabled(oLCD_Enabled),
+	//	.oLCD_RegisterSelect(oLCD_RegisterSelect), 
+	//	.oLCD_ReadWrite(oLCD_ReadWrite),
+	//	.oLCD_StrataFlashControl(oLCD_StrataFlashControl)
+	//);
 	
 	always
 	begin

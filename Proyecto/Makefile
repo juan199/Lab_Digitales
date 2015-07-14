@@ -1,4 +1,7 @@
 CC = gcc
 
-all: LZW.c
+c_program: LZW.c
 	$(CC) -o LZW.exe LZW.c
+
+reg: Registers.v 
+	iverilog -o Reg.test Registers.v

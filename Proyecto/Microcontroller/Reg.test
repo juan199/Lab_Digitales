@@ -1,0 +1,357 @@
+#! /usr/bin/vvp
+:ivl_version "0.9.7 " "(v0_9_7)";
+:vpi_time_precision + 0;
+:vpi_module "system";
+:vpi_module "v2005_math";
+:vpi_module "va_math";
+S_0x2775c40 .scope module, "Registers" "Registers" 2 1;
+ .timescale 0 0;
+v0x2775d30_0 .net "Buffer", 17 0, C4<zzzzzzzzzzzzzzzzzz>; 0 drivers
+v0x2796120_0 .net "BufferInitDicPointer", 0 0, C4<z>; 0 drivers
+v0x27961c0_0 .var "Char", 7 0;
+v0x2796260_0 .net "CharLoadBuffer", 0 0, C4<z>; 0 drivers
+v0x2796310_0 .net "Clock", 0 0, C4<z>; 0 drivers
+v0x27963b0_0 .var "Code", 11 0;
+v0x2796490_0 .net "CodeIncrement", 0 0, C4<z>; 0 drivers
+v0x2796530_0 .net "CodeLoadZero", 0 0, C4<z>; 0 drivers
+v0x2796620_0 .net "ConcatenateChar", 0 0, C4<z>; 0 drivers
+v0x27966c0_0 .net "ConcatenateStringSize", 0 0, C4<z>; 0 drivers
+v0x27967c0_0 .var "DicPointer", 17 0;
+v0x2796860_0 .net "DicPointerIncrement", 0 0, C4<z>; 0 drivers
+v0x2796970_0 .net "Found", 0 0, C4<z>; 0 drivers
+v0x2796a10_0 .var "FoundRegister", 0 0;
+v0x2796b30_0 .var "InitDicPointer", 17 0;
+v0x2796bd0_0 .net "InitRAMCode", 0 0, C4<z>; 0 drivers
+v0x2796a90_0 .var "InsertPointer", 17 0;
+v0x2796d20_0 .var "JumpAddress", 17 0;
+v0x2796e40_0 .net "JumpLoadAddress", 0 0, C4<z>; 0 drivers
+v0x2796ec0_0 .net "LoadDicPointer", 0 0, C4<z>; 0 drivers
+v0x2796da0_0 .net "LoadInsertPointer", 0 0, C4<z>; 0 drivers
+v0x2796ff0_0 .net "NotFound", 0 0, C4<z>; 0 drivers
+v0x2796f40_0 .var "RAMBuffer", 15 0;
+v0x2797130_0 .net "RAMZeroData", 0 0, C4<z>; 0 drivers
+v0x2797090_0 .net "SetJumpAddress", 0 0, C4<z>; 0 drivers
+v0x2797280_0 .var "String", 128 0;
+v0x27971d0_0 .net "StringLoadBuffer", 0 0, C4<z>; 0 drivers
+v0x27973e0_0 .net "StringLoadChar", 0 0, C4<z>; 0 drivers
+v0x2797320_0 .net "StringLoadZero", 0 0, C4<z>; 0 drivers
+v0x2797550_0 .var "StringRAM", 143 0;
+v0x2797460_0 .net "StringRAMLoad", 0 0, C4<z>; 0 drivers
+v0x27976d0_0 .net "StringRAMShift", 0 0, C4<z>; 0 drivers
+v0x27975d0_0 .net "StringRAMZero", 0 0, C4<z>; 0 drivers
+v0x2797860_0 .net "StringShiftRight", 0 0, C4<z>; 0 drivers
+v0x2797750_0 .var "StringSize", 3 0;
+v0x2797a00_0 .net "UpdateInsertPointer", 0 0, C4<z>; 0 drivers
+v0x27978e0_0 .net "WriteString", 0 0, C4<z>; 0 drivers
+E_0x27618d0 .event posedge, v0x2796310_0;
+    .scope S_0x2775c40;
+T_0 ;
+    %wait E_0x27618d0;
+    %load/v 8, v0x2797320_0, 1;
+    %jmp/0xz  T_0.0, 8;
+    %set/v v0x2797750_0, 0, 4;
+    %jmp T_0.1;
+T_0.0 ;
+    %load/v 8, v0x27973e0_0, 1;
+    %load/v 9, v0x27971d0_0, 1;
+    %or 8, 9, 1;
+    %jmp/0xz  T_0.2, 8;
+    %movi 8, 1, 4;
+    %set/v v0x2797750_0, 8, 4;
+    %jmp T_0.3;
+T_0.2 ;
+    %load/v 8, v0x2796620_0, 1;
+    %jmp/0xz  T_0.4, 8;
+    %load/v 8, v0x2797750_0, 4;
+    %mov 12, 0, 28;
+    %addi 8, 1, 32;
+    %set/v v0x2797750_0, 8, 4;
+    %jmp T_0.5;
+T_0.4 ;
+    %load/v 8, v0x2797860_0, 1;
+    %jmp/0xz  T_0.6, 8;
+    %load/v 8, v0x2797750_0, 4;
+    %mov 12, 0, 28;
+    %subi 8, 1, 32;
+    %set/v v0x2797750_0, 8, 4;
+T_0.6 ;
+T_0.5 ;
+T_0.3 ;
+T_0.1 ;
+    %jmp T_0;
+    .thread T_0;
+    .scope S_0x2775c40;
+T_1 ;
+    %wait E_0x27618d0;
+    %load/v 8, v0x2797320_0, 1;
+    %jmp/0xz  T_1.0, 8;
+    %set/v v0x2797280_0, 0, 129;
+    %jmp T_1.1;
+T_1.0 ;
+    %load/v 8, v0x27973e0_0, 1;
+    %jmp/0xz  T_1.2, 8;
+    %load/v 137, v0x27961c0_0, 8;
+    %mov 145, 0, 120;
+    %mov 8, 137, 128;
+    %mov 136, 0, 1;
+    %set/v v0x2797280_0, 8, 129;
+    %jmp T_1.3;
+T_1.2 ;
+    %load/v 8, v0x27971d0_0, 1;
+    %jmp/0xz  T_1.4, 8;
+    %load/v 137, v0x2775d30_0, 8; Select 8 out of 18 bits
+    %mov 145, 0, 120;
+    %mov 8, 137, 128;
+    %mov 136, 0, 1;
+    %set/v v0x2797280_0, 8, 129;
+    %jmp T_1.5;
+T_1.4 ;
+    %load/v 8, v0x2796620_0, 1;
+    %jmp/0xz  T_1.6, 8;
+    %load/v 137, v0x27961c0_0, 8;
+    %load/v 145, v0x2797280_0, 120; Select 120 out of 129 bits
+    %mov 8, 137, 128;
+    %mov 136, 0, 1;
+    %set/v v0x2797280_0, 8, 129;
+    %jmp T_1.7;
+T_1.6 ;
+    %load/v 8, v0x2797860_0, 1;
+    %jmp/0xz  T_1.8, 8;
+    %load/v 137, v0x2797280_0, 120; Select 120 out of 129 bits
+    %mov 257, 0, 8;
+    %mov 8, 137, 128;
+    %mov 136, 0, 1;
+    %set/v v0x2797280_0, 8, 129;
+    %jmp T_1.9;
+T_1.8 ;
+    %load/v 8, v0x27966c0_0, 1;
+    %jmp/0xz  T_1.10, 8;
+    %load/v 137, v0x2797750_0, 4;
+    %load/v 141, v0x2797280_0, 120; Select 120 out of 129 bits
+    %mov 8, 137, 124;
+    %mov 132, 0, 5;
+    %set/v v0x2797280_0, 8, 129;
+T_1.10 ;
+T_1.9 ;
+T_1.7 ;
+T_1.5 ;
+T_1.3 ;
+T_1.1 ;
+    %jmp T_1;
+    .thread T_1;
+    .scope S_0x2775c40;
+T_2 ;
+    %wait E_0x27618d0;
+    %load/v 8, v0x2796da0_0, 1;
+    %jmp/0xz  T_2.0, 8;
+    %load/v 8, v0x27967c0_0, 18;
+    %set/v v0x2796a90_0, 8, 18;
+    %jmp T_2.1;
+T_2.0 ;
+    %load/v 8, v0x2797a00_0, 1;
+    %jmp/0xz  T_2.2, 8;
+    %load/v 8, v0x2796a90_0, 18;
+    %mov 26, 0, 2;
+    %mov 28, 0, 12;
+    %load/v 72, v0x2797750_0, 4;
+    %mov 76, 0, 16;
+    %movi 92, 2, 20;
+    %div 72, 92, 20;
+    %mov 40, 72, 20;
+    %mov 60, 0, 12;
+    %add 8, 40, 32;
+    %addi 8, 1, 32;
+    %set/v v0x2796a90_0, 8, 18;
+T_2.2 ;
+T_2.1 ;
+    %jmp T_2;
+    .thread T_2;
+    .scope S_0x2775c40;
+T_3 ;
+    %wait E_0x27618d0;
+    %load/v 8, v0x2796530_0, 1;
+    %jmp/0xz  T_3.0, 8;
+    %set/v v0x27963b0_0, 0, 12;
+    %jmp T_3.1;
+T_3.0 ;
+    %load/v 8, v0x2796490_0, 1;
+    %jmp/0xz  T_3.2, 8;
+    %load/v 8, v0x27963b0_0, 12;
+    %mov 20, 0, 20;
+    %addi 8, 1, 32;
+    %set/v v0x27963b0_0, 8, 12;
+T_3.2 ;
+T_3.1 ;
+    %jmp T_3;
+    .thread T_3;
+    .scope S_0x2775c40;
+T_4 ;
+    %wait E_0x27618d0;
+    %load/v 8, v0x2797130_0, 1;
+    %jmp/0xz  T_4.0, 8;
+    %set/v v0x2796f40_0, 0, 16;
+    %jmp T_4.1;
+T_4.0 ;
+    %load/v 8, v0x2796bd0_0, 1;
+    %jmp/0xz  T_4.2, 8;
+    %load/v 8, v0x27963b0_0, 8; Select 8 out of 12 bits
+    %mov 16, 0, 8;
+    %set/v v0x2796f40_0, 8, 16;
+    %jmp T_4.3;
+T_4.2 ;
+    %load/v 8, v0x27978e0_0, 1;
+    %jmp/0xz  T_4.4, 8;
+    %load/v 8, v0x2797280_0, 16; Only need 16 of 129 bits
+; Save base=8 wid=16 in lookaside.
+    %set/v v0x2796f40_0, 8, 16;
+T_4.4 ;
+T_4.3 ;
+T_4.1 ;
+    %jmp T_4;
+    .thread T_4;
+    .scope S_0x2775c40;
+T_5 ;
+    %wait E_0x27618d0;
+    %load/v 8, v0x2796970_0, 1;
+    %jmp/0xz  T_5.0, 8;
+    %set/v v0x2796a10_0, 1, 1;
+    %jmp T_5.1;
+T_5.0 ;
+    %load/v 8, v0x2796ff0_0, 1;
+    %jmp/0xz  T_5.2, 8;
+    %set/v v0x2796a10_0, 0, 1;
+T_5.2 ;
+T_5.1 ;
+    %jmp T_5;
+    .thread T_5;
+    .scope S_0x2775c40;
+T_6 ;
+    %wait E_0x27618d0;
+    %load/v 8, v0x2796260_0, 1;
+    %jmp/0xz  T_6.0, 8;
+    %load/v 8, v0x2775d30_0, 8; Only need 8 of 18 bits
+; Save base=8 wid=8 in lookaside.
+    %set/v v0x27961c0_0, 8, 8;
+T_6.0 ;
+    %jmp T_6;
+    .thread T_6;
+    .scope S_0x2775c40;
+T_7 ;
+    %wait E_0x27618d0;
+    %load/v 8, v0x2796120_0, 1;
+    %jmp/0xz  T_7.0, 8;
+    %load/v 8, v0x2775d30_0, 18;
+    %set/v v0x2796b30_0, 8, 18;
+T_7.0 ;
+    %jmp T_7;
+    .thread T_7;
+    .scope S_0x2775c40;
+T_8 ;
+    %wait E_0x27618d0;
+    %load/v 8, v0x2796ec0_0, 1;
+    %jmp/0xz  T_8.0, 8;
+    %load/v 8, v0x2796b30_0, 18;
+    %set/v v0x27967c0_0, 8, 18;
+    %jmp T_8.1;
+T_8.0 ;
+    %load/v 8, v0x2796860_0, 1;
+    %jmp/0xz  T_8.2, 8;
+    %load/v 8, v0x27967c0_0, 18;
+    %mov 26, 0, 14;
+    %addi 8, 1, 32;
+    %set/v v0x27967c0_0, 8, 18;
+    %jmp T_8.3;
+T_8.2 ;
+    %load/v 8, v0x2796e40_0, 1;
+    %jmp/0xz  T_8.4, 8;
+    %load/v 8, v0x2796d20_0, 18;
+    %set/v v0x27967c0_0, 8, 18;
+T_8.4 ;
+T_8.3 ;
+T_8.1 ;
+    %jmp T_8;
+    .thread T_8;
+    .scope S_0x2775c40;
+T_9 ;
+    %wait E_0x27618d0;
+    %load/v 8, v0x2797090_0, 1;
+    %jmp/0xz  T_9.0, 8;
+    %load/v 8, v0x27967c0_0, 18;
+    %mov 26, 0, 128;
+    %addi 8, 1, 146;
+    %load/v 154, v0x2797550_0, 144;
+    %mov 298, 0, 2;
+    %add 8, 154, 146;
+    %ix/load 1, 127, 0;
+    %mov 4, 0, 1;
+    %jmp/1 T_9.2, 4;
+    %load/x1p 300, v0x2797550_0, 9;
+    %jmp T_9.3;
+T_9.2 ;
+    %mov 300, 2, 9;
+T_9.3 ;
+    %mov 154, 300, 9; Move signal select into place
+    %mov 163, 0, 137;
+    %movi 300, 2, 146;
+    %div 154, 300, 146;
+    %add 8, 154, 146;
+    %set/v v0x2796d20_0, 8, 18;
+T_9.0 ;
+    %jmp T_9;
+    .thread T_9;
+    .scope S_0x2775c40;
+T_10 ;
+    %wait E_0x27618d0;
+    %load/v 8, v0x2797460_0, 1;
+    %jmp/0xz  T_10.0, 8;
+    %ix/load 1, 15, 0;
+    %mov 4, 0, 1;
+    %jmp/1 T_10.2, 4;
+    %load/x1p 291, v0x2797550_0, 121;
+    %jmp T_10.3;
+T_10.2 ;
+    %mov 291, 2, 121;
+T_10.3 ;
+    %mov 152, 291, 121; Move signal select into place
+    %ix/load 1, 0, 0;
+    %mov 4, 0, 1;
+    %jmp/1 T_10.4, 4;
+    %load/x1p 291, v0x2796f40_0, 18;
+    %jmp T_10.5;
+T_10.4 ;
+    %mov 291, 2, 18;
+T_10.5 ;
+    %mov 273, 291, 18; Move signal select into place
+    %mov 8, 152, 139;
+    %mov 147, 0, 5;
+    %set/v v0x2797550_0, 8, 144;
+    %jmp T_10.1;
+T_10.0 ;
+    %load/v 8, v0x27975d0_0, 1;
+    %jmp/0xz  T_10.6, 8;
+    %set/v v0x2797550_0, 0, 144;
+    %jmp T_10.7;
+T_10.6 ;
+    %load/v 8, v0x27976d0_0, 1;
+    %jmp/0xz  T_10.8, 8;
+    %ix/load 1, 15, 0;
+    %mov 4, 0, 1;
+    %jmp/1 T_10.10, 4;
+    %load/x1p 153, v0x2797550_0, 129;
+    %jmp T_10.11;
+T_10.10 ;
+    %mov 153, 2, 129;
+T_10.11 ;
+    %mov 8, 153, 129; Move signal select into place
+    %mov 137, 0, 16;
+    %set/v v0x2797550_0, 8, 144;
+T_10.8 ;
+T_10.7 ;
+T_10.1 ;
+    %jmp T_10;
+    .thread T_10;
+# The file index is used to find the file name in the following table.
+:file_names 3;
+    "N/A";
+    "<interactive>";
+    "Registers.v";

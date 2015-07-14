@@ -7,6 +7,8 @@ module MiniAlu
 (
  input wire Clock,
  input wire Reset,
+ input wire PS2_CLK,
+ input wire PS2_DATA,
  output wire [7:0] oLed 
 );
 
@@ -19,16 +21,12 @@ reg         rWriteEnable,rBranchTaken;
 wire [27:0] wInstruction;
 wire [3:0]  wOperation;
 reg signed [32:0]   rResult;
+wire [7:0] KeyCode,wKeyCode;
+wire KeyCodeReady;
 wire [7:0]  wSourceAddr0,wSourceAddr1,wDestination;
 wire signed [15:0] wSourceData0,wSourceData1,wImmediateValue;
 wire [15:0] wIPInitialValue;
 wire [15:0] oIMUL2;
-
-IMUL2 Multiply4(
-			.iSourceData0(wSourceData0),
-			.iSourceData1(wSourceData1),
-			.oResult(oIMUL2)
-			);
 
 
 ROM InstructionRom 
@@ -101,8 +99,8 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( 8 ) FF_LEDS
 (
 	.Clock(Clock),
 	.Reset(Reset),
-	.Enable( rFFLedEN ),
-	.D( wSourceData1 ),
+	.Enable( KeyCodeReady ),
+	.D( wKeyCode ),
 	.Q( oLed    )
 );
 //***************************** FFD Subroutine **********************************
@@ -114,17 +112,27 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( 16 ) FFDSub
 	.D(wIP_temp),
 	.Q(wReturn_Sub)
 );
-//************************************************************************
-//***************************** IMUL16 **********************************
-IMUL16 #(16) MULT16
-(
-.A(wSourceData0),
-.B(wSourceData1),
-.oResult(IMUL_Result)
-);
-//************************************************************************
 
-mult imultiplier( .opA(wSourceData0), .opB(wSourceData1), .result(imul_result));
+
+FFD_POSEDGE_SYNCRONOUS_RESET # ( 16 ) FFDKEy 
+(
+	.Clock(Clock),
+	.Reset(Reset),
+	.Enable(KeyCodeReady),
+	.D(KeyCode),
+	.Q(wKeyCode)
+);
+
+
+KeyBoard_Controller KBC 
+(
+		.Clk(PS2_CLK), 
+		.Data(PS2_DATA), 
+		.reset(Reset),
+		.Parallel_data(KeyCode),
+		.Sent(KeyCodeReady)
+);
+
 
 assign wImmediateValue = {wSourceAddr1,wSourceAddr0};
 
@@ -174,28 +182,6 @@ begin
 		Return_Flag <=1'b0;
 	end
 	//-------------------------------------
-	`IMUL:
-	begin
-		rFFLedEN      <= 1'b0;
-		rBranchTaken  <= 1'b0;
-		rWriteEnable  <= 1'b1;
-		rResult[7:0]  <= imul_result;
-		rResult[15:8] <= 7'b0;
-		Subroutine_Flag <=1'b0;
-		Return_Flag <=1'b0;
-	end
-	//-------------------------------------	
-	`IMUL2:  // Juan
-	begin
-		rFFLedEN     <= 1'b0;
-		rBranchTaken <= 1'b0;
-		rWriteEnable <= 1'b1;
-	   rResult  <= oIMUL2;
-		Subroutine_Flag <=1'b0;
-		Return_Flag <=1'b0;
-
-	end
-	//-------------------------------------
 	`STO:
 	begin
 		rFFLedEN     <= 1'b0;
@@ -240,17 +226,7 @@ begin
 		Subroutine_Flag <=1'b0;
 		Return_Flag <=1'b0;
 	end
-
-	//-------------------------------------	
-	`IMUL16:
-	begin
-		rFFLedEN     <= 1'b0;
-		rWriteEnable <= 1'b1;
-		rResult      <= IMUL_Result;
-		rBranchTaken <= 1'b0;
-		Subroutine_Flag <=1'b0;
-		Return_Flag <=1'b0;		
-	end
+	
 	//-------------------------------------		
 
 	`CALL:
@@ -275,6 +251,20 @@ begin
 		rResult      <= 0;
 		
 	end
+	
+	//-------------------------------------
+	`BRANCH_IF_KB:
+	begin
+		rFFLedEN     <= 1'b0;
+		rWriteEnable <= 1'b0;
+		rResult      <= 0;
+		if (KeyCodeReady)
+			rBranchTaken <= 1'b0;
+		else
+			rBranchTaken <= 1'b1;
+		
+	end
+	//-------------------------------------
 
 	
 	//-------------------------------------

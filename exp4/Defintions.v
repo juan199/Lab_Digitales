@@ -11,11 +11,9 @@
 `define JMP   4'd6
 `define SUB   4'd7
 `define SMUL  4'd8
-`define IMUL  4'd9
-`define IMUL16 4'd10
-`define IMUL2 4'd11
-`define CALL 4'd12
-`define RET 4'd13
+`define CALL 4'd9
+`define RET 4'd10
+`define BRANCH_IF_KB 4'd11
 
 
 

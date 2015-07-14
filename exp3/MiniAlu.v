@@ -7,12 +7,22 @@ module MiniAlu
 (
  input wire Clock,
  input wire Reset,
- input wire iLCD_response,//Respuesta del LCD
- output reg [7:0] oLed,
- output reg [3:0] oLCD_data,//Datos a enviar al LCD
- output wire oLCD_reset, //Reset del LCD_Controller
- output reg oLCD_writeEN // Señal de envío de Datos al LCD_Controller
+ output wire [7:0] oLed,
+ output wire [3:0] oLCD_Data,
+ output wire oLCD_Enabled,
+ output wire oLCD_RegisterSelect, 
+ output wire oLCD_ReadWrite,
+ output wire oLCD_StrataFlashControl
 );
+
+
+//************************************************************
+//Registros internos necesarios
+//************************************************************
+reg oLCD_reset; //Reset del LCD_Controller
+reg oLCD_writeEN; // Señal de envío de Datos al LCD_Controller
+reg [3:0] iLCD_data; //Datos a enviar al LCD
+wire iLCD_response;//Respuesta del LCD
 
 wire [15:0]  wIP,wIP_temp,IMUL_Result;
 wire [7:0] imul_result;
@@ -27,6 +37,24 @@ wire [7:0]  wSourceAddr0,wSourceAddr1,wDestination;
 wire signed [15:0] wSourceData0,wSourceData1,wImmediateValue;
 wire [15:0] wIPInitialValue;
 wire [15:0] oIMUL2;
+
+
+//**********************************************
+//Instacia del LCD_Controller
+//**********************************************
+LCD_controler controller_one(
+	.clk(Clock),
+	.iLCD_data(iLCD_data),
+	.iLCD_reset(Reset),
+	.iLCD_writeEN(oLCD_writeEN),
+	.oLCD_response(iLCD_response),
+	.oLCD_Data(oLCD_Data),
+	.oLCD_Enabled(oLCD_Enabled),
+	.oLCD_RegisterSelect(oLCD_RegisterSelect), 
+	.oLCD_ReadWrite(oLCD_ReadWrite),
+	.oLCD_StrataFlashControl(oLCD_StrataFlashControl)
+);
+
 
 IMUL2 Multiply4(
 			.iSourceData0(wSourceData0),
@@ -53,7 +81,7 @@ RAM_DUAL_READ_PORT DataRam
 );
 
 
-assign oLCD_reset = Reset;
+//assign oLCD_reset = Reset;
 assign wIPInitialValue = (Reset) ? 8'b0 : (Return_Flag? wReturn_Sub:wDestination);
 
 UPCOUNTER_POSEDGE IP
@@ -112,7 +140,7 @@ FFD_POSEDGE_SYNCRONOUS_RESET # ( 8 ) FF_LEDS
 	.Reset(Reset),
 	.Enable( rFFLedEN ),
 	.D( wSourceData1 ),
-	.Q( oLed    )
+	.Q( oLed  )
 );
 //***************************** FFD Subroutine **********************************
 FFD_POSEDGE_SYNCRONOUS_RESET # ( 16 ) FFDSub 
@@ -198,7 +226,7 @@ begin
 		rWriteEnable <= 1'b0;
 		rFFLedEN     <= 1'b0;
 		rBranchTaken <= 1'b0;
-		oLCD_data    <= wSourceData1[7:4];//Manda Parte Alta 
+		iLCD_data    <= wSourceData1[7:4];//Manda Parte Alta 
 		oLCD_writeEN	<= 1'b1;
 		rResult <= 1'b0;
 	end
@@ -207,7 +235,7 @@ begin
 		begin
 		rWriteEnable   <= 1'b0;
 		rFFLedEN       <= 1'b0;
-		oLCD_data      <= wSourceData1[3:0];//Manda Parte Alta 
+		iLCD_data      <= wSourceData1[3:0];//Manda Parte Baja 
 		oLCD_writeEN	<= 1'b1;
 		rBranchTaken <= 1'b0;
 		rResult <=0;

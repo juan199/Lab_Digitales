@@ -1,85 +1,62 @@
 module Registers(
-input 	wire 	Clock,
-// **************** I/O for String size ********************************
-input	wire	StringLoadZero,
-input	wire	StringLoadChar,
-input	wire	StringLoadBuffer,
-input	wire	ConcatenateChar,
-input	wire	StringShiftRight,
-output	reg		[3:0] 	StringSize,
-//**********************************************************************
+	input  wire 	   Clk,
+	input  wire [17:0] InBuffer,
+	input  wire [15:0] iRAMBuffer,
+	output reg  [11:0]  outBuffer,
 
-// **************** I/O for String *************************************
-input 	wire	ConcatenateStringSize,
-input	wire 	[17:0]	Buffer,
-output 	reg		[128:0] String,
-//**********************************************************************
+// **************** Control for String *************************************
+	input wire StringLoadZero,
+	input wire StringLoadChar,
+	input wire StringLoadBuffer,
+	input wire ConcatenateChar,
+	input wire StringShiftRight,
+	input wire ConcatenateStringSize,
 
-// **************** I/O for Insert Pointer *****************************
-input	wire 	LoadInsertPointer,
-input	wire	UpdateInsertPointer,
-output 	reg		[17:0] InsertPointer,
-//**********************************************************************
+// **************** Control for Insert Pointer *************************
+	input wire LoadInsertPointer,
+	input wire UpdateInsertPointer,
 
-// **************** I/O for Code ***************************************
-input 	wire	CodeLoadZero,
-input	wire	CodeIncrement,
-output 	reg		[11:0] Code,	 		
-//**********************************************************************
+// **************** Control for Code ***********************************
+	input wire CodeLoadZero,
+	input wire CodeIncrement,	 		
+	
+// **************** Control for Found **********************************
+	input wire NotFound,
+	input wire Found,
 
-// **************** I/O for RAM Buffer *********************************
-input	wire	RAMZeroData,
-input	wire	InitRAMCode,
-input	wire	WriteString,
-output 	reg		[15:0] RAMBuffer,
-//**********************************************************************
+// **************** Control for Char ***********************************
+	input wire CharLoadBuffer,
 
-// **************** I/O for Found **************************************
-input 	wire	NotFound,
-input	wire	Found,
-output	reg 	FoundRegister,
-//**********************************************************************
+// **************** Control for Init Dictionary Pointer ****************
+	input wire BufferInitDicPointer,
 
-// **************** I/O for Char ***************************************
-input 	wire	CharLoadBuffer,
-output 	reg		[7:0] Char,
-//**********************************************************************
+// **************** Control for Dictionary Pointer *********************
+	input wire LoadDicPointer,
+	input wire DicPointerIncrement,
+	input wire JumpLoadAddress,
 
-// **************** I/O for Init Dictionary Pointer ********************
-input wire		BufferInitDicPointer,
-output 	reg		[17:0] InitDicPointer,
-//**********************************************************************
+// **************** Control for StringRAM ******************************
+	input wire StringRAMLoad,
+	input wire StringRAMZero,
+	input wire StringRAMShift,
 
+// **************** Control for Jumping Address ************************
+	input wire SetJumpAddress,
 
-// **************** I/O for Dictionary Pointer *************************
-input	wire	LoadDicPointer,
-input	wire	DicPointerIncrement,
-input	wire	JumpLoadAddress,
-output 	reg		[17:0] DicPointer,
-//**********************************************************************
-
-// **************** I/O for String to RAM ******************************
-input 	wire	StringRAMLoad,
-input	wire	StringRAMZero,
-input	wire	StringRAMShift,
-output 	reg		[143:0] StringRAM,
-//**********************************************************************
-
-// **************** I/O for Jumping Address ****************************
-input	wire	SetJumpAddress,
-output 	reg		[17:0] JumpAddress,
-//**********************************************************************
-
-// **************** Output conditions **********************************
-output 	wire	DicPointerEqualsInsertPointer,
-output	wire	StringRAMSizeEqualsStringSize,
-output	wire	DicPointerEqualsJumpAddress,
-output	wire	StringRAMSizeEqualsZero,
-output	wire	StringRAMEqualsString,
-output	wire	CodeBigger128,
-output 	wire	CodeEqualsZero
-//**********************************************************************
-
+// ****************** Jump conditions **********************************
+	output wire	DicPointerEqualsInsertPointer,
+	output wire	StringRAMSizeEqualsStringSize,
+	output wire	DicPointerEqualsJumpAddress,
+	output wire	StringRAMSizeEqualsZero,
+	output wire	StringRAMEqualsString,
+	output wire	CodeBigger128,
+	output wire	CodeEqualsZero,
+	output wire FoundStatus,
+	
+// ********************* Data to RAM ***********************************	
+	output wire [7:0]  ramCode,
+	output wire [15:0] ramString,
+	output wire [17:0] ramDicPointer
 );
 
 //**********************************************************************
@@ -92,13 +69,38 @@ assign StringRAMSizeEqualsZero	  		= (StringRAM[7:0] == 0)? 1'b1:1'b0;
 assign StringRAMEqualsString		  	= (StringRAM[135:7] == String)? 1'b1:1'b0;
 assign CodeBigger128				  	= (Code > 12'd128)? 1'b1:1'b0;
 assign CodeEqualsZero				  	= (Code == 0)? 1'b1:1'b0;
+assign FoundStatus                      = FoundRegister;
 
 //**********************************************************************
+//*************************   Data to RAM  *****************************
+//**********************************************************************
 
+assign ramCode       = Code[7:0];
+assign ramString     = String[15:0];
+assign ramDicPointer = DicPointer;
 
+//**********************************************************************
+//***********************   Data to Buffer  ****************************
+//**********************************************************************
+
+assign outBuffer     = Code;
+
+//**********************************************************************
+//**************************  Registers *******************************
+//**********************************************************************
+reg [17:0]  JumpAddress;
+reg	[143:0] StringRAM;
+reg	[17:0]  DicPointer;
+reg	[17:0]  InitDicPointer;
+reg	[7:0]   Char;
+reg         FoundRegister;
+reg	[11:0]  Code;
+reg	[17:0]  InsertPointer;
+reg	[3:0] 	StringSize;
+reg	[128:0] String;
 
 // *************** String Size manage **********************************
-always@(posedge Clock)
+always@(posedge Clk)
 begin
 	if(StringLoadZero)	
 	begin
@@ -122,7 +124,7 @@ end
 
 
 // *************** String manage ***************************************
-always@(posedge Clock)
+always@(posedge Clk)
 begin
 	if(StringLoadZero)	
 	begin
@@ -136,7 +138,7 @@ begin
 	
 	else if (StringLoadBuffer)
 	begin
-		String = {120'b0,Buffer[7:0]};	
+		String = {120'b0, InBuffer[7:0]};	
 	end
 	
 	else if (ConcatenateChar)
@@ -158,7 +160,7 @@ end
 //**********************************************************************
 
 // *************** Insert Pointer manage *******************************
-always@(posedge Clock)
+always@(posedge Clk)
 begin
 	if(LoadInsertPointer)	
 	begin
@@ -173,7 +175,7 @@ end
 //**********************************************************************
 
 // *************** Code Manage 	****************************************
-always@(posedge Clock)
+always@(posedge Clk)
 begin
 	if(CodeLoadZero)	
 	begin
@@ -187,28 +189,9 @@ begin
 end
 //**********************************************************************
 
-// *************** RAMBuffer Manager ***********************************
-always@(posedge Clock)
-begin
-	if(RAMZeroData)	
-	begin
-		RAMBuffer = 16'b0;	
-	end
-	
-	else if (InitRAMCode)
-	begin
-		RAMBuffer = {8'b0,Code[7:0]} ;	
-	end
-	
-	else if (WriteString)
-	begin
-		RAMBuffer = String[15:0];	
-	end
-end
-//**********************************************************************
 
 // *************** Found Manage 	************************************
-always@(posedge Clock)
+always@(posedge Clk)
 begin
 	if(Found)	
 	begin
@@ -223,27 +206,27 @@ end
 //**********************************************************************
 
 // *************** Char Manage 	****************************************
-always@(posedge Clock)
+always@(posedge Clk)
 begin
 	if(CharLoadBuffer)	
 	begin
-		Char = Buffer[7:0];	
+		Char = InBuffer[7:0];	
 	end
 end
 //**********************************************************************
 
 // *************** Init Dictionary Pointer Manage 	********************
-always@(posedge Clock)
+always@(posedge Clk)
 begin
 	if(BufferInitDicPointer)	
 	begin
-		InitDicPointer = Buffer;	
+		InitDicPointer = InBuffer;	
 	end
 end
 //**********************************************************************
 
 // *************** Dictionary Pointer Manager **************************
-always@(posedge Clock)
+always@(posedge Clk)
 begin
 	if(LoadDicPointer)	
 	begin
@@ -263,7 +246,7 @@ end
 //**********************************************************************
 
 // *************** Jump Address Manage 	********************************
-always@(posedge Clock)
+always@(posedge Clk)
 begin
 	if(SetJumpAddress)	
 	begin
@@ -273,11 +256,11 @@ end
 //**********************************************************************
 
 // *************** StringRAM Manager ***********************************
-always@(posedge Clock)
+always@(posedge Clk)
 begin
 	if(StringRAMLoad)	
 	begin
-		StringRAM = {RAMBuffer[17:0],StringRAM[135:15]};	
+		StringRAM = {iRAMBuffer[17:0],StringRAM[135:15]};	
 	end
 	
 	else if (StringRAMZero)

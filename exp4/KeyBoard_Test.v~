@@ -9,16 +9,15 @@ module KeyB_test;
 	wire sent;
 	wire [7:0] Result;
 	
-	
 	reg send_flag;
 
 
 	KeyBoard_Controller uut (
-		.KB_Clock(Clock),
-		.Data(Data), 
-		.Reset(Reset),
+		.PS2_CLK(Clock), 
+		.PS2_DATA(Data), 
+		.reset(Reset),
 		.Parallel_data(Result),
-		.Ready(sent)
+		.Sent(sent)
 	);
 	
 	always
@@ -38,19 +37,18 @@ module KeyB_test;
 	begin
 		#7 Data <= $random;
 	end
-	
+	 
 
 	initial begin
 		// Initialize Inputs
-		
 		Clock = 1;
 		Data = 0;
 		send_flag=0;
 		Reset = 0;
 		
 		// First Reset
-		#107 Reset = 1;
-		#107 Reset = 0;
+		#20 Reset = 1;
+		#20 Reset = 0;
 	end
       
 endmodule

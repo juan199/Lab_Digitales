@@ -67,9 +67,35 @@ output 	reg		[143:0] StringRAM,
 
 // **************** I/O for Jumping Address ****************************
 input	wire	SetJumpAddress,
-output 	reg		[17:0] JumpAddress
+output 	reg		[17:0] JumpAddress,
 //**********************************************************************
+
+// **************** Output conditions **********************************
+output 	wire	DicPointerEqualsInsertPointer,
+output	wire	StringRAMSizeEqualsStringSize,
+output	wire	DicPointerEqualsJumpAddress,
+output	wire	StringRAMSizeEqualsZero,
+output	wire	StringRAMEqualsString,
+output	wire	CodeBigger128,
+output 	wire	CodeEqualsZero
+//**********************************************************************
+
 );
+
+//**********************************************************************
+//**************************  Conditions *******************************
+//**********************************************************************
+assign DicPointerEqualsInsertPointer 	= (DicPointer == InsertPointer)? 1'b1:1'b0;
+assign StringRAMSizeEqualsStringSize 	= (StringRAM[135:127] == StringSize)? 1'b1:1'b0;
+assign DicPointerEqualsJumpAddress	  	= (DicPointer == JumpAddress)? 1'b1:1'b0;	
+assign StringRAMSizeEqualsZero	  		= (StringRAM[7:0] == 0)? 1'b1:1'b0;
+assign StringRAMEqualsString		  	= (StringRAM[135:7] == String)? 1'b1:1'b0;
+assign CodeBigger128				  	= (Code > 12'd128)? 1'b1:1'b0;
+assign CodeEqualsZero				  	= (Code == 0)? 1'b1:1'b0;
+
+//**********************************************************************
+
+
 
 // *************** String Size manage **********************************
 always@(posedge Clock)

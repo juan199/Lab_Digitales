@@ -1,4 +1,4 @@
-`define InstrucWidth 49
+`define InstrucWidth 41
 `define MemorySize 256
 `define AddressSize 8
 
@@ -36,8 +36,7 @@ module controller (
 // **************** Control for Jumping Address ************************
 	output wire SetJumpAddress,
 // **************** Control for Buffers and RAM ************************
-	output wire InputBuffer,
-	output wire OutputBuffer,
+	output wire RequestOutBuffer,
 	output wire CloseBuffer,
 	output wire RAMread,
 	output wire RAMZeroData,
@@ -76,20 +75,20 @@ module controller (
 							EndOfFile,
 							FoundStatus,
 							1'b1,
-							1'b0,
+							1'b0
 };
 
 //----------------------------------------------------------------------
 //							   Memory Section
 //----------------------------------------------------------------------
 	reg  [`InstrucWidth-1:0] Memory[0:`MemorySize-1];
+	reg  [`InstrucWidth-1:0] ReturnAddress;
 	
 	initial
 		$readmemb("ctrl_program.up", Memory);
 	
 	wire [`InstrucWidth-1:0] NextInstruction;
 	wire  [`AddressSize-1:0] ProxAddress;
-	wire  [`AddressSize-1:0] ReturnAddress;
 	
 	assign NextInstruction = Memory[ProxAddress];	
 	
@@ -101,21 +100,49 @@ module controller (
 	always @(posedge clk)
 		InstrucRegister <= NextInstruction;
 	
-	assign ControlSignals = InstrucRegister[48:21];	//	Revisar
-	assign JumpSelection  = InstrucRegister[20:17];
-	assign JumpAddress    = InstrucRegister[16:9];	// Revisar
-	assign Return         = InstrucRegister[8];
-	
-	always @ (posedge clk)
-		if(JumpTrue)
-			ReturnAddress = InstrucRegister[7:0]; // Revisar
+	//~ assign ControlSignals   = InstrucRegister[40:14];	//	Revisar
+	assign JumpSelection    = InstrucRegister[13:10];
+	assign JumpAddress      = InstrucRegister[9:2];	// Revisar
+	assign JumpSubroutine   = InstrucRegister[1];
+	assign ReturnSubroutine = InstrucRegister[0];
 
-	
+	assign {StringLoadZero,
+		    StringLoadChar,
+		    StringLoadBuffer,
+		    ConcatenateChar,
+		    StringShiftRight,
+		    ConcatenateStringSize,
+		    LoadInsertPointer,
+	        UpdateInsertPointer,
+			CodeLoadZero,
+			CodeIncrement,	 		
+			NotFound,
+			Found,
+			CharLoadBuffer,
+			BufferInitDicPointer,
+			LoadDicPointer,
+			DicPointerIncrement,
+			JumpLoadAddress,
+			StringRAMLoad,
+			StringRAMZero,
+			StringRAMShift,
+			SetJumpAddress,
+			RequestOutBuffer,
+			CloseBuffer,
+			RAMread,
+			RAMZeroData,
+			InitRAMCode,
+			WriteString} = InstrucRegister[40:14];
+
 //----------------------------------------------------------------------
 //							   JumpMux
 //----------------------------------------------------------------------	
 	assign JumpTrue = JumpConditions[JumpSelection];	
 	
+	always @ (posedge clk)
+		if(JumpSubroutine)
+			ReturnAddress = ProxAddress;//cambiar
+			
 //----------------------------------------------------------------------
 //							Program Counter
 //----------------------------------------------------------------------		
@@ -132,6 +159,6 @@ module controller (
 //----------------------------------------------------------------------
 //							  andReset
 //----------------------------------------------------------------------
-	assign ProxAddress = reset & (Return ? ReturnAddress : AddressMux);
+	assign ProxAddress = reset & (ReturnSubroutine ? ReturnAddress : AddressMux);
 	
 endmodule

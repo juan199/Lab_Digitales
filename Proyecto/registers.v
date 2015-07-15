@@ -2,7 +2,8 @@ module Registers(
 	input  wire 	   Clk,
 	input  wire [17:0] InBuffer,
 	input  wire [15:0] iRAMBuffer,
-	output reg  [11:0]  outBuffer,
+	output reg  [11:0] outBuffer,
+	output wire        RequestInBuffer,
 
 // **************** Control for String *************************************
 	input wire StringLoadZero,
@@ -83,7 +84,8 @@ assign ramDicPointer = DicPointer;
 //***********************   Data to Buffer  ****************************
 //**********************************************************************
 
-assign outBuffer     = Code;
+assign outBuffer        = Code;
+assign RequestInBuffer  = StringLoadBuffer | CharLoadBuffer | BufferInitDicPointer;
 
 //**********************************************************************
 //**************************  Registers *******************************

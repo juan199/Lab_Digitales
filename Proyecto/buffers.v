@@ -44,7 +44,8 @@ module BufferOut(
 		if(CloseBuffer)
 			begin
 			$fflush(f);
-			$fclose(f);  
+			$fclose(f);
+			$finish;  
 			end
 		end
 endmodule

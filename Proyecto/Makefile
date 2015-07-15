@@ -3,5 +3,5 @@ CC = gcc
 c_program: LZW.c
 	$(CC) -o LZW.exe LZW.c
 
-reg: Registers.v 
-	iverilog -o Reg.test Registers.v
+reg: registers.v 
+	iverilog -o Reg.test registers.v

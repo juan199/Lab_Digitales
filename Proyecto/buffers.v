@@ -2,10 +2,10 @@
 module BufferIn(
 	input wire       Clk,
 	input wire       InputBuffer,
-	output reg [7:0] oBufferIn,
+	output reg [17:0] oBufferIn,
 	output reg       EndOfFile
 );
-	reg [7:0] tmpChar;
+	reg [17:0] tmpChar;
 	integer i;
 	
 	initial
@@ -22,7 +22,7 @@ module BufferIn(
 			if($feof(i))
 				EndOfFile = 1'b1;
 			else
-				oBufferIn = tmpChar[7:0];
+				oBufferIn = tmpChar;
 			end
 		end		
 endmodule

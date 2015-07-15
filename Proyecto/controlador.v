@@ -28,7 +28,8 @@ module controller (
 // **************** Control for Dictionary Pointer *********************
 	output wire LoadDicPointer,
 	output wire DicPointerIncrement,
-	output wire JumpLoadAddress,
+	output wire LoadJumpAddress,
+	output wire DicPointerLoadInsert,
 // **************** Control for StringRAM ******************************
 	output wire StringRAMLoad,
 	output wire StringRAMZero,
@@ -141,7 +142,7 @@ module controller (
 	
 	always @ (posedge clk)
 		if(JumpSubroutine)
-			ReturnAddress = ProxAddress;//cambiar
+			ReturnAddress = ProgramCounter + 1;
 			
 //----------------------------------------------------------------------
 //							Program Counter
@@ -159,6 +160,6 @@ module controller (
 //----------------------------------------------------------------------
 //							  andReset
 //----------------------------------------------------------------------
-	assign ProxAddress = reset & (ReturnSubroutine ? ReturnAddress : AddressMux);
+	assign ProxAddress = reset ? `AddressSize'b0 : (ReturnSubroutine ? ReturnAddress : AddressMux);
 	
 endmodule

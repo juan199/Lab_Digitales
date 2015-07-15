@@ -2,12 +2,17 @@ module testbench;
 	
 	reg clk;
 	reg reset;
+	reg Compress;
+	reg Decompress;
+	
 	
 	initial
 		begin
 		clk   = 1'b1;
 		reset = 1'b1;
+		Decompress = 1'b0;
 		#30 reset = 1'b0;
+		#50 Compress = 1'b1;
 		end
 		
 	always
@@ -41,7 +46,8 @@ module testbench;
 		.BufferInitDicPointer(BufferInitDicPointer),
 		.LoadDicPointer(LoadDicPointer),
 		.DicPointerIncrement(DicPointerIncrement),
-		.JumpLoadAddress(JumpLoadAddress),
+		.LoadJumpAddress(JumpLoadAddress),
+		.DicPointerLoadInsert(DicPointerLoadInsert),
 		.StringRAMLoad(StringRAMLoad),
 		.StringRAMZero(StringRAMZero),
 		.StringRAMShift(StringRAMShift),
@@ -53,20 +59,19 @@ module testbench;
 		.InitRAMCode(oInitRAMCode),
 		.WriteString(oWriteString),
 //************************ Jump conditions******************************
-		.Compress(Compress), 						// 1101 
-		.Decompress(Decompress),                      // 1100
-		.found(found),                           // 1011
-		.DicPointerEqualsINsertPoniter(DicPointerEqualsInsertPointer),   // 1010
-		.StringRAMSizeEqualsStringSize(StringRAMSizeEqualsStringSize),   // 1001
-		.DicPointerEqualsJumpAddress(DicPointerEqualsJumpAddress),     // 1000
-		.StringRAMSizeEqualsZero(StringRAMSizeEqualsZero),         // 0111
-		.StringRAMEqualsString(StringRAMEqualsString),           // 0110
-		.CodeBigger128(CodeBigger128),                   // 0101
-		.CodeEqualsZero(CodeEqualsZero),                  // 0100
-		.EndOfFile(EOF),                       // 0011
-		.FoundStatus(FoundStatus)                      // 0010
-	//   Inconditional jump                     // 0001
-	//   No jump                                // 0000
+		.Compress(Compress), 											// 1100 
+		.Decompress(Decompress),                      					// 1011
+		.DicPointerEqualsINsertPoniter(DicPointerEqualsInsertPointer),  // 1010
+		.StringRAMSizeEqualsStringSize(StringRAMSizeEqualsStringSize),  // 1001
+		.DicPointerEqualsJumpAddress(DicPointerEqualsJumpAddress),     	// 1000
+		.StringRAMSizeEqualsZero(StringRAMSizeEqualsZero),         		// 0111
+		.StringRAMEqualsString(StringRAMEqualsString),           		// 0110
+		.CodeBigger128(CodeBigger128),                   				// 0101
+		.CodeEqualsZero(CodeEqualsZero),                  				// 0100
+		.EndOfFile(EOF),                       							// 0011
+		.FoundStatus(FoundStatus)                      					// 0010
+	//   Inconditional jump                     						// 0001
+	//   No jump                                						// 0000
 );
 
 wire [15:0] iRAMBuffer;
@@ -112,7 +117,8 @@ Registers registers(
 // **************** Control for Dictionary Pointer *********************
 	.LoadDicPointer(LoadDicPointer),
 	.DicPointerIncrement(DicPointerIncrement),
-	.JumpLoadAddress(JumpLoadAddress),
+	.LoadJumpAddress(JumpLoadAddress),
+	.DicPointerLoadInsert(DicPointerLoadInsert),
 
 // **************** Control for StringRAM ******************************
 	.StringRAMLoad(StringRAMLoad),

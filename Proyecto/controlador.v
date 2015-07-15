@@ -44,9 +44,8 @@ module controller (
 	output wire InitRAMCode,
 	output wire WriteString,
 //************************ Jump conditions******************************
-	input wire Compress, 						// 1101 
-	input wire Decompress,                      // 1100
-	input wire found,                           // 1011
+	input wire Compress, 						// 1100 
+	input wire Decompress,                      // 1011
 	input wire DicPointerEqualsINsertPoniter,   // 1010
 	input wire StringRAMSizeEqualsStringSize,   // 1001
 	input wire DicPointerEqualsJumpAddress,     // 1000

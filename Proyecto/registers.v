@@ -2,7 +2,7 @@ module Registers(
 	input  wire 	   Clk,
 	input  wire [17:0] InBuffer,
 	input  wire [15:0] iRAMBuffer,
-	output reg  [11:0] outBuffer,
+	output wire [11:0] outBuffer,
 	output wire        RequestInBuffer,
 
 // **************** Control for String *************************************

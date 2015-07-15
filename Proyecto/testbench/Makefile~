@@ -1,0 +1,10 @@
+all: TB
+
+
+
+TB: compress_test.v ../buffers.v ../registers.v
+	iverilog -o Compress.test ../buffers.v ../registers.v ../controlador.v compress_test.v
+	./Pipeline.test
+	gtkwave Pipeline.vcd Pipeline.gtkw
+
+

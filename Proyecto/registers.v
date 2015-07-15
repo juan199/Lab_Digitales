@@ -34,7 +34,8 @@ module Registers(
 // **************** Control for Dictionary Pointer *********************
 	input wire LoadDicPointer,
 	input wire DicPointerIncrement,
-	input wire JumpLoadAddress,
+	input wire LoadJumpAddress,
+	input wire DicPointerLoadInsert,
 
 // **************** Control for StringRAM ******************************
 	input wire StringRAMLoad,
@@ -240,10 +241,12 @@ begin
 		DicPointer = DicPointer + 1;	
 	end
 	
-	else if (JumpLoadAddress)
+	else if (LoadJumpAddress)
 	begin
 		DicPointer = JumpAddress;	
 	end
+	else if (DicPointerLoadInsert)
+		DicPointer = InsertPointer;
 end
 //**********************************************************************
 

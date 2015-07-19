@@ -1,4 +1,4 @@
-`define InstrucWidth 41
+`define InstrucWidth 42
 `define MemorySize 256
 `define AddressSize 8
 
@@ -64,7 +64,6 @@ module controller (
 //----------------------------------------------------------------------
     assign JumpConditions = {Compress,
 							Decompress,
-							found,
 							DicPointerEqualsINsertPoniter,
 							StringRAMSizeEqualsStringSize,
 							DicPointerEqualsJumpAddress,
@@ -122,7 +121,8 @@ module controller (
 			BufferInitDicPointer,
 			LoadDicPointer,
 			DicPointerIncrement,
-			JumpLoadAddress,
+			LoadJumpAddress,
+			DicPointerLoadInsert,
 			StringRAMLoad,
 			StringRAMZero,
 			StringRAMShift,
@@ -132,7 +132,7 @@ module controller (
 			RAMread,
 			RAMZeroData,
 			InitRAMCode,
-			WriteString} = InstrucRegister[40:14];
+			WriteString} = InstrucRegister[41:14];
 
 //----------------------------------------------------------------------
 //							   JumpMux
